@@ -74,13 +74,6 @@
     height: auto;
     padding: 12px 12px;
   }
-  .combo-option.recent-tag {
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--coral);
-    margin-left: 8px;
-  }
 
   section.card {
     background: var(--ink-soft);
@@ -540,7 +533,7 @@
       customMode = false;
       const { recentProfiles, rest } = orderedProfilesForPicker();
       let html = recentProfiles.map(p =>
-        `<div class="combo-option" data-id="${p.id}">${escapeHtml(p.name)}<span class="recent-tag">Recent</span></div>`
+        `<div class="combo-option" data-id="${p.id}">${escapeHtml(p.name)}</div>`
       ).join('');
       html += rest.map(p =>
         `<div class="combo-option" data-id="${p.id}">${escapeHtml(p.name)}</div>`
