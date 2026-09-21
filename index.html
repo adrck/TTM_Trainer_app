@@ -1,0 +1,966 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TTM Trainer app</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #12161C;
+    --ink-soft: #1B212A;
+    --paper: #F1EFE8;
+    --paper-dim: #C9C5B8;
+    --coral: #FF5A36;
+    --steel: #6C8A9A;
+    --line: rgba(241,239,232,0.12);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--ink);
+    color: var(--paper);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    line-height: 1.45;
+    overflow-wrap: break-word;
+  }
+  .display {
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 0.02em;
+  }
+  .mono { font-family: 'Space Mono', monospace; }
+
+  .wrap {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 28px 20px 80px;
+  }
+
+  header.top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    flex-wrap: wrap;
+    row-gap: 4px;
+    margin-bottom: 22px;
+  }
+  header.top h1 {
+    font-size: 40px;
+    margin: 0;
+    line-height: 0.9;
+  }
+  header.top .today {
+    font-size: 13px;
+    color: var(--paper-dim);
+  }
+
+  .athlete-picker {
+    margin-bottom: 26px;
+  }
+  .athlete-picker label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--paper-dim);
+    margin-bottom: 6px;
+  }
+  .athlete-picker .combo-wrap input {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 0.03em;
+    height: auto;
+    padding: 12px 12px;
+  }
+  .combo-option.recent-tag {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--coral);
+    margin-left: 8px;
+  }
+
+  section.card {
+    background: var(--ink-soft);
+    border: 1px solid var(--line);
+    padding: 20px;
+    margin-bottom: 24px;
+  }
+  section.card h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    margin: 0 0 16px;
+    color: var(--coral);
+    letter-spacing: 0.02em;
+  }
+
+  .row { display: flex; gap: 10px; margin-bottom: 12px; }
+  .row > div { flex: 1; min-width: 0; }
+  label {
+    display: block;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--paper-dim);
+    margin-bottom: 6px;
+  }
+  input, textarea {
+    width: 100%;
+    min-width: 0;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    color: var(--paper);
+    padding: 10px 11px;
+    font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    border-radius: 2px;
+  }
+  input[type="text"], input[type="number"], input[type="date"] {
+    height: 44px;
+  }
+  input[type="date"] {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--coral);
+  }
+  textarea { resize: vertical; min-height: 54px; }
+
+  button.submit {
+    background: var(--coral);
+    color: var(--ink);
+    border: none;
+    padding: 13px 18px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 0.03em;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 4px;
+  }
+  button.submit:hover { background: #ff7250; }
+  button.submit:disabled { background: var(--paper-dim); cursor: default; }
+
+  .day-group { margin-bottom: 22px; }
+  .day-label {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 16px;
+    color: var(--paper);
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+    margin-bottom: 10px;
+  }
+  .entry {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+    gap: 12px;
+  }
+  .entry:last-child { border-bottom: none; }
+  .entry-main { flex: 1; }
+  .entry-name { font-weight: 600; font-size: 16px; color: var(--steel); }
+  .entry-stats {
+    font-family: 'Space Mono', monospace;
+    font-size: 13px;
+    color: var(--steel);
+    margin-top: 3px;
+  }
+  .entry-comment {
+    font-size: 13px;
+    color: var(--paper-dim);
+    margin-top: 6px;
+    font-style: italic;
+  }
+  .del-btn {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--paper-dim);
+    font-size: 11px;
+    padding: 5px 9px;
+    cursor: pointer;
+    letter-spacing: 0.03em;
+  }
+  .del-btn:hover { color: var(--coral); border-color: var(--coral); }
+
+  .empty {
+    color: var(--paper-dim);
+    font-size: 14px;
+    padding: 20px 0;
+    text-align: center;
+  }
+
+  .entry { cursor: pointer; }
+  .entry:hover .entry-name { color: var(--coral); }
+
+  .edit-panel {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .edit-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .edit-actions button { flex: 1; }
+  button.save-btn {
+    background: var(--coral);
+    color: var(--ink);
+    border: none;
+    padding: 11px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  button.cancel-btn, button.del-btn-full {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--paper-dim);
+    padding: 11px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  button.del-btn-full:hover { color: var(--coral); border-color: var(--coral); }
+
+
+
+  .combo-wrap { position: relative; }
+  .combo-wrap input { cursor: pointer; }
+  .combo-wrap input:not([readonly]) { cursor: text; }
+  .combo-dropdown {
+    display: none;
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 0;
+    right: 0;
+    background: var(--ink);
+    border: 1px solid var(--line);
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 20;
+  }
+  .combo-option {
+    padding: 11px 12px;
+    font-size: 15px;
+    cursor: pointer;
+  }
+  .combo-option:hover { background: var(--ink-soft); color: var(--coral); }
+  .combo-option.add-new { color: var(--steel); font-style: italic; }
+  .combo-option.back-option { color: var(--steel); border-bottom: 1px solid var(--line); }
+
+  .last-time-note {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--coral);
+    margin: 6px 0 12px;
+  }
+
+  .sets-editor label { margin-bottom: 8px; }
+  .set-rows { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+  .set-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .set-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--steel);
+    width: 20px;
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .set-row input { flex: 1; min-width: 0; }
+  .set-remove {
+    background: none;
+    border: 1px solid var(--line);
+    color: var(--paper-dim);
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .set-remove:hover { color: var(--coral); border-color: var(--coral); }
+  .add-set-btn {
+    background: none;
+    border: 1px dashed var(--line);
+    color: var(--steel);
+    padding: 9px 12px;
+    font-size: 13px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .add-set-btn:hover { color: var(--coral); border-color: var(--coral); }
+
+  .status {
+    font-size: 13px;
+    color: var(--paper-dim);
+    text-align: center;
+    padding: 40px 0;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 class="display">TTM TRAINER</h1>
+    <div class="today mono" id="todayLabel"></div>
+  </header>
+
+  <div id="app">
+    <div class="status">Loading…</div>
+  </div>
+</div>
+
+<script type="module">
+  import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+
+  const SUPABASE_URL = 'https://djlpvcbixyudltgoirai.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_IKQhD9O2WE1d6xUFD5p6Vw_0cFU274D';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  const app = document.getElementById('app');
+  const todayLabel = document.getElementById('todayLabel');
+  todayLabel.textContent = new Date().toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+
+  let profiles = [];
+  let activeProfileId = localStorage.getItem('activeProfileId') || null;
+  let entries = [];
+  let exercises = [];
+  let editingId = null;
+
+  function todayISO() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+
+  function formatDay(iso) {
+    const d = new Date(iso + 'T00:00:00');
+    const t = new Date(); t.setHours(0,0,0,0);
+    const diffDays = Math.round((t - d) / 86400000);
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return 'Yesterday';
+    return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  }
+
+  async function loadProfiles() {
+    const { data, error } = await supabase.from('profiles').select('*').order('name');
+    if (error) { app.innerHTML = `<div class="status">Couldn't load profiles: ${error.message}</div>`; return; }
+    profiles = data;
+    if (!activeProfileId && profiles.length) activeProfileId = profiles[0].id;
+  }
+
+  function getRecentProfileIds() {
+    try { return JSON.parse(localStorage.getItem('recentProfileIds') || '[]'); }
+    catch { return []; }
+  }
+
+  function markProfileRecent(id) {
+    let recent = getRecentProfileIds().filter(x => x !== id);
+    recent.unshift(id);
+    recent = recent.slice(0, 5);
+    localStorage.setItem('recentProfileIds', JSON.stringify(recent));
+  }
+
+  function orderedProfilesForPicker() {
+    const recentIds = getRecentProfileIds();
+    const byId = new Map(profiles.map(p => [p.id, p]));
+    const recentProfiles = recentIds.map(id => byId.get(id)).filter(Boolean);
+    const recentIdSet = new Set(recentProfiles.map(p => p.id));
+    const rest = profiles.filter(p => !recentIdSet.has(p.id)).sort((a, b) => a.name.localeCompare(b.name));
+    return { recentProfiles, rest };
+  }
+
+  async function loadExercises() {
+    const { data, error } = await supabase.from('exercises').select('*').order('name');
+    if (error) { console.error(error); exercises = []; return; }
+    exercises = data;
+  }
+
+  async function ensureExercise(name) {
+    const exists = exercises.some(e => e.name.toLowerCase() === name.toLowerCase());
+    if (exists) return;
+    const { error } = await supabase.from('exercises').insert({ name });
+    if (!error) await loadExercises();
+  }
+
+  async function loadEntries() {
+    if (!activeProfileId) { entries = []; return; }
+    const { data, error } = await supabase
+      .from('workout_entries')
+      .select('*, workout_sets(*)')
+      .eq('profile_id', activeProfileId)
+      .order('entry_date', { ascending: false })
+      .order('created_at', { ascending: false });
+    if (error) { console.error(error); entries = []; return; }
+    entries = data.map(e => ({
+      ...e,
+      workout_sets: (e.workout_sets || []).slice().sort((a, b) => a.set_number - b.set_number)
+    }));
+  }
+
+  function groupByDay(list) {
+    const groups = {};
+    for (const e of list) {
+      if (!groups[e.entry_date]) groups[e.entry_date] = [];
+      groups[e.entry_date].push(e);
+    }
+    return groups;
+  }
+
+  function exerciseFieldHtml(fieldId, currentValue) {
+    return `
+      <div class="combo-wrap">
+        <input type="text" id="${fieldId}" name="exercise_name" required readonly
+          autocomplete="off"
+          placeholder="Tap to pick an exercise…" value="${escapeHtml(currentValue || '')}" />
+        <div class="combo-dropdown"></div>
+      </div>
+    `;
+  }
+
+  function formatShortDate(iso) {
+    const d = new Date(iso + 'T00:00:00');
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  }
+
+  function formatWeight(w) {
+    if (w == null) return null;
+    return String(w).replace('.', ',');
+  }
+
+  function setsSummary(sets) {
+    if (!sets || sets.length === 0) return null;
+    return sets.map(s => {
+      if (s.reps != null && s.weight != null) return `${s.reps}×${formatWeight(s.weight)}kg`;
+      if (s.reps != null) return `${s.reps} reps`;
+      if (s.weight != null) return `${formatWeight(s.weight)}kg`;
+      return '—';
+    }).join(' · ');
+  }
+
+  function setRowHtml(index, s) {
+    s = s || {};
+    return `
+      <div class="set-row" data-index="${index}">
+        <span class="set-num">${index + 1}</span>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" class="set-reps" placeholder="reps" value="${s.reps ?? ''}" />
+        <input type="text" inputmode="decimal" class="set-weight" placeholder="kg" value="${formatWeight(s.weight) ?? ''}" />
+        <button type="button" class="set-remove" title="Remove set">×</button>
+      </div>
+    `;
+  }
+
+  function setsEditorHtml(prefix, sets) {
+    const rows = (sets && sets.length ? sets : [{}, {}, {}]).map((s, i) => setRowHtml(i, s)).join('');
+    return `
+      <div class="sets-editor" id="${prefix}_setsEditor">
+        <label>Sets</label>
+        <div class="set-rows">${rows}</div>
+        <button type="button" class="add-set-btn">+ Add set</button>
+      </div>
+    `;
+  }
+
+  function renumberSetRows(container) {
+    container.querySelectorAll('.set-row').forEach((row, i) => {
+      row.dataset.index = i;
+      row.querySelector('.set-num').textContent = i + 1;
+    });
+  }
+
+  function setupSetsEditor(editorEl) {
+    const rowsEl = editorEl.querySelector('.set-rows');
+    editorEl.querySelector('.add-set-btn').addEventListener('click', () => {
+      const div = document.createElement('div');
+      div.innerHTML = setRowHtml(rowsEl.children.length, {});
+      rowsEl.appendChild(div.firstElementChild);
+      renumberSetRows(rowsEl);
+    });
+    rowsEl.addEventListener('click', (ev) => {
+      const btn = ev.target.closest('.set-remove');
+      if (!btn) return;
+      btn.closest('.set-row').remove();
+      renumberSetRows(rowsEl);
+    });
+  }
+
+  function replaceSetRows(editorEl, sets) {
+    const rowsEl = editorEl.querySelector('.set-rows');
+    const list = sets && sets.length ? sets : [{}, {}, {}];
+    rowsEl.innerHTML = list.map((s, i) => setRowHtml(i, s)).join('');
+  }
+
+  function readSetsFromForm(form) {
+    return Array.from(form.querySelectorAll('.set-row')).map(row => {
+      const repsVal = row.querySelector('.set-reps').value;
+      const weightVal = row.querySelector('.set-weight').value.trim().replace(',', '.');
+      return {
+        reps: repsVal ? Number(repsVal) : null,
+        weight: weightVal ? Number(weightVal) : null,
+      };
+    }).filter(s => s.reps != null || s.weight != null);
+  }
+
+  function applyLastTime(form, value) {
+    const note = form.querySelector('.last-time-note');
+    const editorEl = form.querySelector('.sets-editor');
+    if (!value) {
+      note.style.display = 'none'; note.textContent = '';
+      replaceSetRows(editorEl, null);
+      return;
+    }
+    const last = entries.find(e => e.exercise_name.toLowerCase() === value.trim().toLowerCase());
+    if (!last) {
+      note.style.display = 'none'; note.textContent = '';
+      replaceSetRows(editorEl, null);
+      return;
+    }
+    replaceSetRows(editorEl, last.workout_sets);
+    const summary = setsSummary(last.workout_sets) || 'no details recorded';
+    const label = last.entry_date === todayISO() ? 'Already logged today' : `Last time (${formatShortDate(last.entry_date)})`;
+    note.textContent = `${label}: ${summary}`;
+    note.style.display = 'block';
+  }
+
+  function setupAthleteCombo(input, startCustom) {
+    const dropdown = input.nextElementSibling;
+    let customMode = !!startCustom;
+
+    function showBrowseList() {
+      customMode = false;
+      const { recentProfiles, rest } = orderedProfilesForPicker();
+      let html = recentProfiles.map(p =>
+        `<div class="combo-option" data-id="${p.id}">${escapeHtml(p.name)}<span class="recent-tag">Recent</span></div>`
+      ).join('');
+      html += rest.map(p =>
+        `<div class="combo-option" data-id="${p.id}">${escapeHtml(p.name)}</div>`
+      ).join('');
+      html += `<div class="combo-option add-new" data-action="new">+ Add new athlete…</div>`;
+      dropdown.innerHTML = html;
+      dropdown.style.display = 'block';
+    }
+
+    function showTypeaheadList() {
+      const q = input.value.trim().toLowerCase();
+      const filtered = profiles.filter(p => p.name.toLowerCase().includes(q));
+      let html = `<div class="combo-option back-option" data-action="back">← Back to list</div>`;
+      html += filtered.map(p =>
+        `<div class="combo-option" data-id="${p.id}">${escapeHtml(p.name)}</div>`
+      ).join('');
+      if (input.value.trim() && !profiles.some(p => p.name.toLowerCase() === q)) {
+        html += `<div class="combo-option add-new" data-value="${escapeHtml(input.value.trim())}">Use "${escapeHtml(input.value.trim())}"</div>`;
+      }
+      dropdown.innerHTML = html;
+      dropdown.style.display = 'block';
+    }
+
+    input.addEventListener('focus', () => { if (!customMode) showBrowseList(); });
+    input.addEventListener('click', () => { if (!customMode) showBrowseList(); });
+    input.addEventListener('input', () => { if (customMode) showTypeaheadList(); });
+    input.addEventListener('blur', () => {
+      setTimeout(() => {
+        dropdown.style.display = 'none';
+        if (!customMode) input.readOnly = true;
+      }, 150);
+    });
+
+    if (customMode) showTypeaheadList();
+
+    dropdown.addEventListener('mousedown', async (ev) => {
+      const opt = ev.target.closest('.combo-option');
+      if (!opt) return;
+      ev.preventDefault();
+
+      if (opt.dataset.action === 'back') {
+        customMode = false;
+        input.readOnly = true;
+        const active = profiles.find(p => p.id === activeProfileId);
+        input.value = active ? active.name : '';
+        dropdown.style.display = 'none';
+        return;
+      }
+
+      if (opt.dataset.action === 'new') {
+        const fresh = document.createElement('input');
+        fresh.type = 'text';
+        fresh.id = input.id;
+        fresh.required = true;
+        fresh.autocomplete = 'off';
+        fresh.placeholder = "Type the athlete's name…";
+        input.replaceWith(fresh);
+        const freshDropdown = document.createElement('div');
+        freshDropdown.className = 'combo-dropdown';
+        dropdown.replaceWith(freshDropdown);
+        setupAthleteCombo(fresh, true);
+        fresh.focus();
+        return;
+      }
+
+      if (opt.dataset.id) {
+        activeProfileId = opt.dataset.id;
+        localStorage.setItem('activeProfileId', activeProfileId);
+        markProfileRecent(activeProfileId);
+        editingId = null;
+        await loadEntries();
+        render();
+        return;
+      }
+
+      if (opt.dataset.value) {
+        const { data, error } = await supabase.from('profiles').insert({ name: opt.dataset.value }).select().single();
+        if (error) { alert('Could not add athlete: ' + error.message); return; }
+        await loadProfiles();
+        activeProfileId = data.id;
+        localStorage.setItem('activeProfileId', activeProfileId);
+        markProfileRecent(activeProfileId);
+        editingId = null;
+        await loadEntries();
+        render();
+      }
+    });
+  }
+
+  function setupExerciseCombo(input, onSelectExisting, startCustom) {
+    const dropdown = input.nextElementSibling;
+    let customMode = !!startCustom;
+
+    function showBrowseList() {
+      customMode = false;
+      const html = exercises.map(x =>
+        `<div class="combo-option" data-value="${escapeHtml(x.name)}">${escapeHtml(x.name)}</div>`
+      ).join('') + `<div class="combo-option add-new" data-action="new">+ Enter a new exercise…</div>`;
+      dropdown.innerHTML = html;
+      dropdown.style.display = 'block';
+    }
+
+    function showTypeaheadList() {
+      const q = input.value.trim().toLowerCase();
+      const filtered = exercises.filter(x => x.name.toLowerCase().includes(q));
+      let html = `<div class="combo-option back-option" data-action="back">← Back to list</div>`;
+      html += filtered.map(x =>
+        `<div class="combo-option" data-value="${escapeHtml(x.name)}">${escapeHtml(x.name)}</div>`
+      ).join('');
+      if (input.value.trim() && !exercises.some(x => x.name.toLowerCase() === q)) {
+        html += `<div class="combo-option add-new" data-value="${escapeHtml(input.value.trim())}">Use "${escapeHtml(input.value.trim())}"</div>`;
+      }
+      dropdown.innerHTML = html;
+      dropdown.style.display = 'block';
+    }
+
+    input.addEventListener('focus', () => {
+      if (!customMode) showBrowseList();
+    });
+    input.addEventListener('click', () => {
+      if (!customMode) showBrowseList();
+    });
+    input.addEventListener('input', () => {
+      if (customMode) showTypeaheadList();
+    });
+    input.addEventListener('blur', () => {
+      setTimeout(() => {
+        dropdown.style.display = 'none';
+        if (!customMode) input.readOnly = true;
+      }, 150);
+    });
+
+    if (customMode) showTypeaheadList();
+
+    dropdown.addEventListener('mousedown', (ev) => {
+      const opt = ev.target.closest('.combo-option');
+      if (!opt) return;
+      ev.preventDefault();
+
+      if (opt.dataset.action === 'back') {
+        customMode = false;
+        input.readOnly = true;
+        input.value = '';
+        input.placeholder = 'Tap to pick an exercise…';
+        dropdown.style.display = 'none';
+        if (onSelectExisting) onSelectExisting(null);
+        return;
+      }
+
+      if (opt.dataset.action === 'new') {
+        // Swap in a brand-new input (and dropdown, so no stale listeners
+        // linger) rather than reusing this one. A fresh element that's
+        // never been readonly reliably gets the on-screen keyboard when
+        // focused; toggling readonly on an already-focused field does not.
+        const fresh = document.createElement('input');
+        fresh.type = 'text';
+        fresh.name = 'exercise_name';
+        fresh.required = true;
+        fresh.autocomplete = 'off';
+        fresh.id = input.id;
+        fresh.placeholder = 'Type the exercise name…';
+        input.replaceWith(fresh);
+        const freshDropdown = document.createElement('div');
+        freshDropdown.className = 'combo-dropdown';
+        dropdown.replaceWith(freshDropdown);
+        setupExerciseCombo(fresh, onSelectExisting, true);
+        fresh.focus();
+        if (onSelectExisting) onSelectExisting(null);
+        return;
+      }
+
+      input.value = opt.dataset.value;
+      customMode = false;
+      input.readOnly = true;
+      input.placeholder = 'Tap to pick an exercise…';
+      dropdown.style.display = 'none';
+      input.blur();
+      if (onSelectExisting) onSelectExisting(opt.dataset.value);
+    });
+  }
+
+  function entryFormFieldsHtml(prefix, e) {
+    e = e || {};
+    return `
+      <div class="row">
+        <div>
+          <label>Exercise</label>
+          ${exerciseFieldHtml(prefix + '_exercise', e.exercise_name)}
+        </div>
+        <div style="max-width:150px;">
+          <label>Date</label>
+          <input type="date" name="entry_date" value="${e.entry_date || todayISO()}" required />
+        </div>
+      </div>
+      <div class="last-time-note" style="display:none;"></div>
+      <div class="row">
+        <div>
+          ${setsEditorHtml(prefix, e.workout_sets)}
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>Comment <span style="text-transform:none;">(pain, form notes, how it felt…)</span></label>
+          <textarea name="comment" placeholder="optional">${escapeHtml(e.comment || '')}</textarea>
+        </div>
+      </div>
+    `;
+  }
+
+  function render() {
+    const activeProfile = profiles.find(p => p.id === activeProfileId);
+
+    const groups = groupByDay(entries);
+    const days = Object.keys(groups);
+
+    let historyHtml = '';
+    if (days.length === 0) {
+      historyHtml = `<div class="empty">No sessions logged yet. Add your first one above.</div>`;
+    } else {
+      historyHtml = days.map(day => `
+        <div class="day-group">
+          <div class="day-label">${formatDay(day)}</div>
+          ${groups[day].map(e => {
+            if (editingId === e.id) {
+              return `
+                <div class="edit-panel">
+                  <form class="edit-form" data-edit-id="${e.id}">
+                    ${entryFormFieldsHtml('edit', e)}
+                    <div class="edit-actions">
+                      <button type="submit" class="save-btn">Save</button>
+                      <button type="button" class="cancel-btn" data-cancel="1">Cancel</button>
+                      <button type="button" class="del-btn-full" data-del-id="${e.id}">Delete</button>
+                    </div>
+                  </form>
+                </div>
+              `;
+            }
+            return `
+              <div class="entry" data-entry-id="${e.id}">
+                <div class="entry-main">
+                  <div class="entry-name">${escapeHtml(e.exercise_name)}</div>
+                  <div class="entry-stats">${setsSummary(e.workout_sets) || 'No sets recorded'}</div>
+                  ${e.comment ? `<div class="entry-comment">${escapeHtml(e.comment)}</div>` : ''}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `).join('');
+    }
+
+    app.innerHTML = `
+      <div class="athlete-picker">
+        <label>Athlete</label>
+        <div class="combo-wrap">
+          <input type="text" id="athleteInput" required readonly autocomplete="off"
+            placeholder="Tap to pick an athlete…" value="${escapeHtml(activeProfile ? activeProfile.name : '')}" />
+          <div class="combo-dropdown"></div>
+        </div>
+      </div>
+
+      <section class="card">
+        <h2>Log a session</h2>
+        <form id="entryForm">
+          ${entryFormFieldsHtml('new', null)}
+          <button type="submit" class="submit">Add entry</button>
+        </form>
+      </section>
+
+      <section>
+        <h2 class="display" style="font-size:20px; color: var(--steel); margin-bottom: 4px;">HISTORY</h2>
+        <div style="font-size:12px; color: var(--paper-dim); margin-bottom: 10px;">Tap an entry to view or edit it.</div>
+        ${historyHtml}
+      </section>
+    `;
+
+    document.querySelectorAll('input[name="exercise_name"]').forEach(inputEl => {
+      const formEl = inputEl.closest('form');
+      const isNewEntryForm = formEl.id === 'entryForm';
+      setupExerciseCombo(inputEl, isNewEntryForm ? (value) => applyLastTime(formEl, value) : null);
+    });
+
+    document.querySelectorAll('.sets-editor').forEach(setupSetsEditor);
+
+    setupAthleteCombo(document.getElementById('athleteInput'));
+
+    document.getElementById('entryForm').addEventListener('submit', onSubmit);
+
+    document.querySelectorAll('.entry').forEach(el => {
+      el.addEventListener('click', () => {
+        editingId = el.dataset.entryId;
+        render();
+      });
+    });
+
+    document.querySelectorAll('.edit-form').forEach(form => {
+      form.addEventListener('submit', onEditSubmit);
+    });
+
+    document.querySelectorAll('[data-cancel]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        editingId = null;
+        render();
+      });
+    });
+
+    document.querySelectorAll('.del-btn-full').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        if (!confirm('Delete this entry?')) return;
+        const id = btn.dataset.delId;
+        await supabase.from('workout_entries').delete().eq('id', id);
+        editingId = null;
+        await loadEntries();
+        render();
+      });
+    });
+  }
+
+  function readEntryForm(form) {
+    const fd = new FormData(form);
+    return {
+      exercise_name: fd.get('exercise_name').trim(),
+      entry_date: fd.get('entry_date'),
+      comment: fd.get('comment') ? fd.get('comment').trim() : null,
+    };
+  }
+
+  async function onSubmit(ev) {
+    ev.preventDefault();
+    const form = ev.target;
+    const submitBtn = form.querySelector('.submit');
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving…';
+
+    const entryPayload = { profile_id: activeProfileId, ...readEntryForm(form) };
+    const sets = readSetsFromForm(form);
+
+    // Same exercise + same date = same entry. If one already exists today, merge into it
+    // instead of creating a duplicate (handles supersets where you log a set, switch to
+    // another exercise, then come back).
+    const existing = entries.find(e =>
+      e.exercise_name.toLowerCase() === entryPayload.exercise_name.toLowerCase() &&
+      e.entry_date === entryPayload.entry_date
+    );
+
+    let entryId;
+    if (existing) {
+      const mergedComment = entryPayload.comment || existing.comment || null;
+      const { error } = await supabase.from('workout_entries').update({ comment: mergedComment }).eq('id', existing.id);
+      if (error) {
+        alert('Could not save: ' + error.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add entry';
+        return;
+      }
+      entryId = existing.id;
+      await supabase.from('workout_sets').delete().eq('entry_id', entryId);
+    } else {
+      const { data, error } = await supabase.from('workout_entries').insert(entryPayload).select().single();
+      if (error) {
+        alert('Could not save: ' + error.message);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Add entry';
+        return;
+      }
+      entryId = data.id;
+    }
+
+    if (sets.length) {
+      const setRows = sets.map((s, i) => ({ entry_id: entryId, set_number: i + 1, reps: s.reps, weight: s.weight }));
+      const { error: setsError } = await supabase.from('workout_sets').insert(setRows);
+      if (setsError) alert('Entry saved, but sets failed to save: ' + setsError.message);
+    }
+    await ensureExercise(entryPayload.exercise_name);
+    await loadEntries();
+    render();
+  }
+
+  async function onEditSubmit(ev) {
+    ev.preventDefault();
+    const form = ev.target;
+    const id = form.dataset.editId;
+    const saveBtn = form.querySelector('.save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+
+    const entryPayload = readEntryForm(form);
+    const sets = readSetsFromForm(form);
+
+    const { error } = await supabase.from('workout_entries').update(entryPayload).eq('id', id);
+    if (error) {
+      alert('Could not save: ' + error.message);
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save';
+      return;
+    }
+    await supabase.from('workout_sets').delete().eq('entry_id', id);
+    if (sets.length) {
+      const setRows = sets.map((s, i) => ({ entry_id: id, set_number: i + 1, reps: s.reps, weight: s.weight }));
+      const { error: setsError } = await supabase.from('workout_sets').insert(setRows);
+      if (setsError) alert('Entry saved, but sets failed to save: ' + setsError.message);
+    }
+    await ensureExercise(entryPayload.exercise_name);
+    editingId = null;
+    await loadEntries();
+    render();
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
+  }
+
+  (async function init() {
+    await loadProfiles();
+    await loadExercises();
+    await loadEntries();
+    render();
+  })();
+</script>
+</body>
+</html>
